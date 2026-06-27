@@ -11,9 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-const URI = "mongodb://localhost:27017"
-const DB_NAME = "regex-index-lab"
-
 func ConnectMongo() (*mongo.Database, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -41,10 +38,12 @@ func EnsureIndexes(db *mongo.Database) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	_, err := db.Collection("tags").Indexes().CreateOne(ctx, mongo.IndexModel{
+	if _, err := db.Collection(COLL_NAME).Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{Key: "tag", Value: 1}},
 		Options: options.Index().SetUnique(true),
-	})
+	}); err != nil {
+		return fmt.Errorf("ensure index: %w", err)
+	}
 
-	return err
+	return nil
 }
